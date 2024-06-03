@@ -535,6 +535,10 @@ inline size_t encode(char* currEncoding, const uint8_t* bytes, size_t binarytext
   return currEncoding - start;
 }
 
+inline size_t encoded_size(size_t byte_size) {
+  return (byte_size / 3 + (byte_size % 3 > 0)) << 2;
+}
+
 template <class OutputBuffer, class InputIterator>
 inline OutputBuffer encode_into(InputIterator begin, InputIterator end) {
   typedef std::decay_t<decltype(*begin)> input_value_type;
@@ -548,8 +552,7 @@ inline OutputBuffer encode_into(InputIterator begin, InputIterator end) {
                 std::is_same_v<output_value_type, unsigned char> ||
                 std::is_same_v<output_value_type, std::byte>);
   const size_t binarytextsize = end - begin;
-  const size_t encodedsize = (binarytextsize / 3 + (binarytextsize % 3 > 0))
-                             << 2;
+  const size_t encodedsize = encoded_size(binarytextsize);
   OutputBuffer encoded(encodedsize, detail::padding_char);
 
   const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&*begin);
