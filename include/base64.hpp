@@ -490,25 +490,8 @@ std::array<char, 256> constexpr encode_table_1 = {
 
 }  // namespace detail
 
-template <class OutputBuffer, class InputIterator>
-inline OutputBuffer encode_into(InputIterator begin, InputIterator end) {
-  typedef std::decay_t<decltype(*begin)> input_value_type;
-  static_assert(std::is_same_v<input_value_type, char> ||
-                std::is_same_v<input_value_type, signed char> ||
-                std::is_same_v<input_value_type, unsigned char> ||
-                std::is_same_v<input_value_type, std::byte>);
-  typedef typename OutputBuffer::value_type output_value_type;
-  static_assert(std::is_same_v<output_value_type, char> ||
-                std::is_same_v<output_value_type, signed char> ||
-                std::is_same_v<output_value_type, unsigned char> ||
-                std::is_same_v<output_value_type, std::byte>);
-  const size_t binarytextsize = end - begin;
-  const size_t encodedsize = (binarytextsize / 3 + (binarytextsize % 3 > 0))
-                             << 2;
-  OutputBuffer encoded(encodedsize, detail::padding_char);
-
-  const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&*begin);
-  char* currEncoding = reinterpret_cast<char*>(&encoded[0]);
+inline size_t encode(char* currEncoding, const uint8_t* bytes, size_t binarytextsize) {
+  char* start = currEncoding;
 
   for (size_t i = binarytextsize / 3; i; --i) {
     const uint8_t t1 = *bytes++;
@@ -548,6 +531,31 @@ inline OutputBuffer encode_into(InputIterator begin, InputIterator end) {
       throw std::runtime_error{"Invalid base64 encoded data"};
     }
   }
+
+  return currEncoding - start;
+}
+
+template <class OutputBuffer, class InputIterator>
+inline OutputBuffer encode_into(InputIterator begin, InputIterator end) {
+  typedef std::decay_t<decltype(*begin)> input_value_type;
+  static_assert(std::is_same_v<input_value_type, char> ||
+                std::is_same_v<input_value_type, signed char> ||
+                std::is_same_v<input_value_type, unsigned char> ||
+                std::is_same_v<input_value_type, std::byte>);
+  typedef typename OutputBuffer::value_type output_value_type;
+  static_assert(std::is_same_v<output_value_type, char> ||
+                std::is_same_v<output_value_type, signed char> ||
+                std::is_same_v<output_value_type, unsigned char> ||
+                std::is_same_v<output_value_type, std::byte>);
+  const size_t binarytextsize = end - begin;
+  const size_t encodedsize = (binarytextsize / 3 + (binarytextsize % 3 > 0))
+                             << 2;
+  OutputBuffer encoded(encodedsize, detail::padding_char);
+
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&*begin);
+  char* currEncoding = reinterpret_cast<char*>(&encoded[0]);
+
+  encode(currEncoding, bytes, binarytextsize);
 
   return encoded;
 }
