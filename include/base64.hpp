@@ -513,8 +513,8 @@ inline size_t encode(char* currEncoding, const uint8_t* bytes, size_t binarytext
       const uint8_t t1 = bytes[0];
       *currEncoding++ = detail::encode_table_0[t1];
       *currEncoding++ = detail::encode_table_1[(t1 & 0x03) << 4];
-      // *currEncoding++ = detail::padding_char;
-      // *currEncoding++ = detail::padding_char;
+      *currEncoding++ = detail::padding_char;
+      *currEncoding++ = detail::padding_char;
       break;
     }
     case 2: {
@@ -524,7 +524,7 @@ inline size_t encode(char* currEncoding, const uint8_t* bytes, size_t binarytext
       *currEncoding++ =
           detail::encode_table_1[((t1 & 0x03) << 4) | ((t2 >> 4) & 0x0F)];
       *currEncoding++ = detail::encode_table_1[(t2 & 0x0F) << 2];
-      // *currEncoding++ = detail::padding_char;
+      *currEncoding++ = detail::padding_char;
       break;
     }
     default: {
